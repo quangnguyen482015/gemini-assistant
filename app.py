@@ -1,6 +1,29 @@
+
+import pymysql
+import pandas as pd
 import streamlit as st
 from google import genai
 from google.genai import types
+
+def query_database(sql_query: str):
+    """Thực thi câu lệnh SQL lấy số liệu thống kê."""
+    db_config = st.secrets["mysql"]
+    conn = pymysql.connect(
+        host=db_config["host"],
+        user=db_config["user"],
+        password=db_config["password"],
+        database=db_config["database"],
+        port=db_config.get("port", 3306),
+        cursorclass=pymysql.cursors.DictCursor
+    )
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(sql_query)
+            result = cursor.fetchall()
+        return pd.DataFrame(result)
+    finally:
+        conn.close()
+
 
 # Cấu hình giao diện chuẩn cho điện thoại
 st.set_page_config(page_title="Trợ Lý Tự Động Hóa", page_icon="⚡", layout="centered")
